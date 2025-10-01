@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="container py-4" style="max-width: 760px;">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">{{ template_data.petition.title }}</h2>
+    <a href="{% url 'petitions.index' %}" class="btn btn-outline-secondary">All Petitions</a>
+  </div>
+  {% if template_data.petition.description %}
+    <p class="lead">{{ template_data.petition.description }}</p>
+  {% endif %}
+  <div class="my-3">
+    <span class="badge bg-success">Yes: {{ template_data.yes_count }}</span>
+    <span class="badge bg-danger ms-2">No: {{ template_data.no_count }}</span>
+  </div>
+  <div class="mt-3">
+    {% if user.is_authenticated %}
+      <div class="d-flex gap-2">
+        <form method="post" action="{% url 'petitions.vote_yes' template_data.petition.id %}">
+          {% csrf_token %}
+          <button class="btn btn-success" type="submit">
+            {% if template_data.user_vote and template_data.user_vote.value %}
+              You voted Yes
+            {% else %}
+              Vote Yes
+            {% endif %}
+          </button>
+        </form>
+        <form method="post" action="{% url 'petitions.vote_no' template_data.petition.id %}">
+          {% csrf_token %}
+          <button class="btn btn-danger" type="submit">
+            {% if template_data.user_vote and not template_data.user_vote.value %}
+              You voted No
+            {% else %}
+              Vote No
+            {% endif %}
+          </button>
+        </form>
+      </div>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'accounts.login' %}">Login to vote</a>
+    {% endif %}
+  </div>
+  <hr>
+  <small class="text-muted">Created by {{ template_data.petition.created_by.username }} on {{ template_data.petition.created_at }}</small>
+</section>
+{% endblock %}
