@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'analytics.map' %}">Popularity Map</a></li>
+            <li class="breadcrumb-item active">{{ template_data.region.name }}</li>
+        </ol>
+    </nav>
+    
+    <h1 class="mb-4">
+        <i class="fas fa-fire"></i> Trending in {{ template_data.region.name }}
+    </h1>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Top 10 Movies (Last 30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    {% if template_data.trending_items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Movie</th>
+                                        <th>Purchases</th>
+                                        <th>Unique Buyers</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in template_data.trending_items %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-primary">#{{ forloop.counter }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ item.movie__name }}</strong>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-shopping-cart"></i> {{ item.total_purchases }}
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-users"></i> {{ item.unique_buyers }}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'movies.show' item.movie__id %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No trending data available for this region yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            {% if user.is_authenticated %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Your Recent Purchases</h5>
+                </div>
+                <div class="card-body">
+                    {% if template_data.user_purchases %}
+                        <ul class="list-group list-group-flush">
+                            {% for purchase in template_data.user_purchases %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                {{ purchase.movie__name }}
+                                <span class="badge bg-secondary">{{ purchase.total }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small">You haven't made any purchases in the last 30 days.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Region Info</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>State:</strong> {{ template_data.region.name }}</p>
+                    <p><strong>Code:</strong> {{ template_data.region.code }}</p>
+                    <p class="mb-0 small text-muted">
+                        <i class="fas fa-clock"></i> Data from last 30 days
+                    </p>
+                    <hr>
+                    <a href="{% url 'analytics.map' %}" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left"></i> Back to Map
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

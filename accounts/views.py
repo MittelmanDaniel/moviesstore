@@ -34,7 +34,11 @@ def signup(request):
     elif request.method == 'POST':
         form = CustomUserCreationForm(request.POST, error_class=CustomErrorList)
         if form.is_valid():
-            form.save()
+            user = form.save()
+            # Save region to user profile
+            if form.cleaned_data.get('region'):
+                user.profile.region = form.cleaned_data['region']
+                user.profile.save()
             return redirect('accounts.login')
         else:
             template_data['form'] = form
