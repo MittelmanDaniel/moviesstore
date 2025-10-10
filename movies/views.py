@@ -17,11 +17,19 @@ def index(request):
 def show(request, id):
     movie = Movie.objects.get(id=id)
     reviews = Review.objects.filter(movie=movie, reported=False)
+    
+    user_rating = None
+    if request.user.is_authenticated:
+        user_review = reviews.filter(user=request.user).first()
+        if user_review:
+            user_rating = user_review.rating
 
     template_data = {}
     template_data['title'] = movie.name
     template_data['movie'] = movie
     template_data['reviews'] = reviews
+    template_data['average_rating'] = movie.average_rating
+    template_data['user_rating'] = user_rating
     return render(request, 'movies/show.html', {'template_data': template_data})
 
 @login_required
@@ -67,4 +75,17 @@ def report_review(request, id, review_id):
     review = get_object_or_404(Review, id=review_id)
     review.reported = True
     review.save()
+    return redirect('movies.show', id=id)
+
+@login_required
+def rate_movie(request, id):
+    if request.method == 'POST':
+        movie = get_object_or_404(Movie, id=id)
+        rating = request.POST.get('rating')
+        if rating:
+            review, created = Review.objects.update_or_create(
+                movie=movie,
+                user=request.user,
+                defaults={'rating': rating}
+            )
     return redirect('movies.show', id=id)

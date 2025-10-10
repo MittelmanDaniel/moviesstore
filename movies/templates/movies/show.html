@@ -9,6 +9,28 @@
         <hr />
         <p><b>Description:</b> {{ template_data.movie.description }}</p>
         <p><b>Price:</b> ${{ template_data.movie.price }}</p>
+
+        {% if template_data.average_rating %}
+          <p><b>Average Rating:</b> {{ template_data.average_rating|floatformat:1 }} / 5</p>
+        {% else %}
+          <p><b>Average Rating:</b> No ratings yet.</p>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'movies.rate' id=template_data.movie.id %}">
+          {% csrf_token %}
+          <div class="rating">
+            <input type="radio" name="rating" value="5" id="5" {% if template_data.user_rating == 5 %}checked{% endif %}><label for="5">☆</label>
+            <input type="radio" name="rating" value="4" id="4" {% if template_data.user_rating == 4 %}checked{% endif %}><label for="4">☆</label>
+            <input type="radio" name="rating" value="3" id="3" {% if template_data.user_rating == 3 %}checked{% endif %}><label for="3">☆</label>
+            <input type="radio" name="rating" value="2" id="2" {% if template_data.user_rating == 2 %}checked{% endif %}><label for="2">☆</label>
+            <input type="radio" name="rating" value="1" id="1" {% if template_data.user_rating == 1 %}checked{% endif %}><label for="1">☆</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Rate</button>
+        </form>
+        {% endif %}
+
+
         <p class="card-text">
           <form method="post" action="{% url 'cart.add' id=template_data.movie.id %}">
             <div class="row">
@@ -38,6 +60,9 @@
               {{ review.date }}
             </h6>
             <p class="card-text">{{ review.comment }}</p>
+            {% if review.rating > 0 %}
+            <p>Rating: {{ review.rating }} / 5</p>
+            {% endif %}
             {% if user.is_authenticated and user == review.user %}
             <a class="btn btn-primary"
               href="{% url 'movies.edit_review' id=template_data.movie.id review_id=review.id %}">
@@ -91,4 +116,38 @@
     </div>
   </div>
 </div>
+
+<style>
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+}
+
+.rating > input{ display:none;}
+
+.rating > label {
+    position: relative;
+    width: 1em;
+    font-size: 3vw;
+    color: #FFD600;
+    cursor: pointer;
+}
+.rating > label::before{
+    content: "\2605";
+    position: absolute;
+    opacity: 0;
+}
+.rating > label:hover:before,
+.rating > label:hover ~ label:before {
+    opacity: 1 !important;
+}
+
+.rating > input:checked ~ label:before{
+    opacity:1;
+}
+
+.rating:hover > input:checked ~ label:before{ opacity: 0.4; }
+
+</style>
 {% endblock content %}
